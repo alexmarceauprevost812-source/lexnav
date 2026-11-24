@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Nouvel onglet</title>
+<style>
+  @font-face { font-family:"Montserrat"; src:url("Montserrat.ttf"); font-weight:100 900; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family:"Montserrat",sans-serif; font-weight:600; color:#fff; background:#000;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding-top:7vh; overflow:hidden;
+  }
+  /* ---- Fond animé : intro zoom, respiration, néon qui grésille ---- */
+  #fond { position:fixed; inset:0; z-index:-3; pointer-events:none;
+    background:#000 url("fond.png") center/cover no-repeat;
+    animation:entree 2.6s cubic-bezier(.65,0,.25,1) both, respire 6s ease-in-out 2.6s infinite; }
+  #halo { position:fixed; inset:0; z-index:-2; pointer-events:none; mix-blend-mode:screen;
+    background:radial-gradient(ellipse 60% 22% at 50% 50%, rgba(255,122,26,.32), rgba(255,122,26,.08) 55%, transparent 75%);
+    animation:halo 6s ease-in-out 2.6s infinite; opacity:.4; }
+  body::before { content:""; position:fixed; inset:0; z-index:-1;
+    background:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.05) 32%, rgba(0,0,0,.05) 68%, rgba(0,0,0,.85)); }
+  @keyframes entree {
+    0%   { transform:scale(3.2); filter:brightness(.2) blur(2px); }
+    25%  { transform:scale(3.0); filter:brightness(1.3) blur(0); }
+    100% { transform:scale(1);   filter:brightness(.82); }
+  }
+  @keyframes respire {
+    0%,100% { filter:brightness(.82) saturate(1); transform:scale(1); }
+    50%     { filter:brightness(1.12) saturate(1.25); transform:scale(1.045); }
+  }
+  @keyframes halo { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+  .clache #fond { animation:neon .9s steps(1) 1, respire 6s ease-in-out infinite; }
+  .clache #halo { animation:neonhalo .9s steps(1) 1; }
+  .clache #heure { animation:neonheure .9s steps(1) 1; }
+  @keyframes neon {
+    0% { filter:brightness(1.1); } 8% { filter:brightness(.25) saturate(.6); }
+    14% { filter:brightness(1.35) saturate(1.5); } 20% { filter:brightness(.3); }
+    26% { filter:brightness(1.2); } 48% { filter:brightness(.45); }
+    52% { filter:brightness(1.4) saturate(1.6); } 60%,100% { filter:brightness(1); }
+  }
+  @keyframes neonhalo {
+    0% { opacity:1; } 8% { opacity:0; } 14% { opacity:1; } 20% { opacity:0; }
+    26% { opacity:.9; } 48% { opacity:.1; } 52% { opacity:1; } 100% { opacity:.6; }
+  }
+  @keyframes neonheure {
+    0%,100% { text-shadow:0 0 14px rgba(255,122,26,.7), 0 0 34px rgba(255,122,26,.35); }
+    8%,20%,48% { text-shadow:none; opacity:.7; }
+    14%,52% { text-shadow:0 0 22px rgba(255,122,26,1), 0 0 50px rgba(255,122,26,.6); }
+  }
+  /* ---- Apparition : heure, puis recherche, puis favoris ---- */
+  #horloge, form, .tuiles, #pied { animation:apparait .9s cubic-bezier(.2,.8,.2,1) both; }
+  #horloge { animation-delay:2.4s; } form { animation-delay:3.0s; }
+  .tuiles { animation-delay:3.5s; } #pied { animation-delay:3.7s; }
+  @keyframes apparait { from { opacity:0; transform:scale(.7) translateY(18px); filter:blur(6px); }
+                        to   { opacity:1; transform:none; filter:none; } }
+
+  #horloge { text-align:center; margin-bottom:18px; }
+  #heure { font-size:54px; font-weight:800; letter-spacing:2px;
+    text-shadow:0 0 14px rgba(255,122,26,.7), 0 0 34px rgba(255,122,26,.35); }
+  #date { opacity:.85; margin-top:2px; letter-spacing:3px; text-transform:uppercase;
+    font-size:11px; font-weight:700; }
+  form { width:90vw; max-width:560px; }
+  input {
+    width:100%; padding:15px 22px; font-size:16px; border-radius:30px;
+    border:1px solid rgba(255,122,26,.6); background:rgba(0,0,0,.8); color:#fff;
+    font-family:"Montserrat",sans-serif; font-weight:600; outline:none;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s;
+  }
+  input::placeholder { color:#999; }
+  input:focus { transform:scale(1.03); border-color:#ff7a1a; box-shadow:0 0 22px rgba(255,122,26,.4); }
+  .tuiles { display:flex; flex-wrap:wrap; gap:12px 6px; justify-content:center;
+    margin-top:auto; margin-bottom:9vh; max-width:94vw; }
+  .tuile { width:76px; text-decoration:none; color:#fff; font-size:11px; font-weight:700;
+    display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .ico { width:56px; height:56px; border-radius:50%; display:grid; place-items:center;
+    font-size:21px; font-weight:800; color:#ff7a1a; background:rgba(0,0,0,.8);
+    border:1px solid rgba(255,122,26,.4); transition:transform .25s cubic-bezier(.2,.8,.2,1); }
+  .tuile:active .ico { transform:scale(1.18); border-color:#ff7a1a; box-shadow:0 0 16px rgba(255,122,26,.5); }
+  .tuile span { max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #pied { position:fixed; bottom:10px; width:100%; text-align:center; font-size:9px;
+    color:#aaa; letter-spacing:3px; font-weight:700; }
+</style></head>
+<body>
+  <div id="fond"></div><div id="halo"></div>
+  <div id="horloge"><div id="heure">--:--</div><div id="date"></div></div>
+  <form onsubmit="return go()">
+    <input id="q" type="search" enterkeyhint="go" autocomplete="off"
+           placeholder="Rechercher ou taper une adresse…">
+  </form>
+  <div class="tuiles" id="tuiles"></div>
+  <div id="pied">LEXNAV · ANDROID · PRODUIT DU QUÉBEC</div>
+<script>
+  const pont = window.LexNav;
+  let MOTEUR = "https://duckduckgo.com/?q={}";
+  try { if (pont) MOTEUR = pont.moteur(); } catch (e) {}
+  try {
+    const nom = pont ? pont.nomMoteur() : "DuckDuckGo";
+    document.getElementById('q').placeholder = "Rechercher avec " + nom + "…";
+  } catch (e) {}
+
+  // Favoris
+  let favoris = [];
+  try { favoris = JSON.parse(pont ? pont.favoris() : "[]"); } catch (e) {}
+  const zone = document.getElementById('tuiles');
+  favoris.slice(0, 8).forEach(f => {
+    let hote = f.url; try { hote = new URL(f.url).hostname.replace('www.', ''); } catch (e) {}
+    const a = document.createElement('a');
+    a.className = 'tuile'; a.href = f.url;
+    const ico = document.createElement('div'); ico.className = 'ico';
+    ico.textContent = (hote[0] || '?').toUpperCase();
+    const s = document.createElement('span'); s.textContent = f.titre || hote;
+    a.append(ico, s); zone.append(a);
+  });
+
+  function tic() {
+    const d = new Date();
+    document.getElementById('heure').textContent =
+      d.toLocaleTimeString('fr-CA', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('date').textContent =
+      d.toLocaleDateString('fr-CA', {weekday:'long', day:'numeric', month:'long'});
+  }
+  tic(); setInterval(tic, 1000);
+
+  function go() {
+    const v = document.getElementById('q').value.trim();
+    if (!v) return false;
+    const estUrl = /^(https?:\/\/)/.test(v) || /^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(v);
+    location.href = estUrl ? (v.includes('://') ? v : 'https://' + v)
+                           : MOTEUR.replace('{}', encodeURIComponent(v));
+    return false;
+  }
+
+  // Néon qui « clache » au hasard
+  function clache() {
+    document.body.classList.remove('clache'); void document.body.offsetWidth;
+    document.body.classList.add('clache');
+    setTimeout(() => document.body.classList.remove('clache'), 950);
+    setTimeout(clache, 5000 + Math.random() * 9000);
+  }
+  setTimeout(clache, 5000 + Math.random() * 3000);
+</script>
+</body></html>
